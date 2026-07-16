@@ -7,7 +7,7 @@
  *
  * 未設定の場合は sampleLinks を表示します。
  */
-const DATA_URL = 'https://script.google.com/macros/s/AKfycbzsWmOLvd5r3ARysSn7NtWLPseqkgkmMl1txnoFChvMViONOrhtCizgg0hs0vejPPWHgA/exec';
+const DATA_URL = 'https://script.google.com/macros/s/AKfycbzgw2GbrxSyKYVdM_K5XBmvuiN2Fetz32YdSxvtg3KiJDLsAzT8b2bwHZEIefJxXGD7DQ/exec';
 
 const sampleLinks = [
   {
