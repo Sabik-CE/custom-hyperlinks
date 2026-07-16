@@ -3,11 +3,11 @@
 /**
  * GASのWebアプリURLを設定してください。
  * 例:
- * const DATA_URL = 'https://script.google.com/macros/s/XXXXXXXXXXXX/exec';
+ * const DATA_URL = 'https://script.google.com/macros/s/AKfycbzsWmOLvd5r3ARysSn7NtWLPseqkgkmMl1txnoFChvMViONOrhtCizgg0hs0vejPPWHgA/exec';
  *
  * 未設定の場合は sampleLinks を表示します。
  */
-const DATA_URL = '';
+const DATA_URL = 'https://script.google.com/macros/s/AKfycbzsWmOLvd5r3ARysSn7NtWLPseqkgkmMl1txnoFChvMViONOrhtCizgg0hs0vejPPWHgA/exec';
 
 const sampleLinks = [
   {
