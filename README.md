@@ -1,6 +1,6 @@
 # Custom Hyperlinks
 
-Googleスプレッドシートで管理する個人用リンク集を、GitHub Pages上でカード形式に表示する静的サイトです。
+Googleスプレッドシートで管理する個人用リンク集を、GitHub Pages上でコンパクトなカード形式に表示する静的サイトです。
 
 ## ファイル構成
 
@@ -26,7 +26,7 @@ GitHub Pagesは次の設定を想定しています。
 
 ## Googleスプレッドシート
 
-リンク一覧は `links` シート、カテゴリ設定は `categories` シートで管理します。
+1つのGoogleスプレッドシート内に、`links` と `categories` の2つのシートを作ります。
 
 ### links
 
@@ -38,7 +38,10 @@ active | pin | category | name | url | description | order
 
 - `active`: `TRUE` の行だけ表示します。
 - `pin`: `TRUE` の行は上部のピン留め欄に表示します。
-- `category`: カテゴリキーです。`categories.category` と一致すると表示名や初期開閉状態が反映されます。
+- `category`: カテゴリキーです。`categories.category` と一致すると初期開閉状態と表示順が反映されます。
+- `name`: カードに表示するリンク名です。
+- `url`: リンク先URLです。
+- `description`: メモ用です。現在の画面には表示しません。
 - `order`: 同じカテゴリ内のリンク表示順です。小さい値が先に表示されます。
 
 ### categories
@@ -46,16 +49,20 @@ active | pin | category | name | url | description | order
 必須列:
 
 ```text
-active | category | display_name | initial_state | order
+active | category | initial_state | order
 ```
 
 - `active`: `TRUE` のカテゴリだけ有効です。
-- `category`: `links.category` と対応する内部キーです。
-- `display_name`: サイト上に表示するカテゴリ名です。
+- `category`: `links.category` と対応するカテゴリ名です。画面にもこの値を表示します。
 - `initial_state`: `open` または `hide` を指定します。それ以外は `open` になります。
 - `order`: カテゴリ表示順です。小さい値が先に表示されます。
 
 `categories` に存在しないカテゴリのリンクも表示されます。その場合は元のカテゴリ名を表示し、初期状態は `open`、表示順は設定済みカテゴリの後ろになります。
+
+## CSVサンプル
+
+- `links_sample.csv` をGoogleスプレッドシートにインポートし、シート名を `links` にします。
+- `categories_sample.csv` をGoogleスプレッドシートにインポートし、シート名を `categories` にします。
 
 ## GASの設定
 
@@ -63,8 +70,6 @@ active | category | display_name | initial_state | order
 2. スプレッドシートIDを使う場合は `SPREADSHEET_ID` に設定します。同じスプレッドシートに紐づくApps Scriptなら空のままで動作します。
 3. Webアプリとしてデプロイします。
 4. アクセス権は利用環境に合わせて設定し、発行されたWebアプリURLを `app.js` の `DATA_URL` に設定します。
-5. `links_sample.csv` をGoogleスプレッドシートにインポートし、シート名を `links` にします。
-6. `categories_sample.csv` をGoogleスプレッドシートにインポートし、シート名を `categories` にします。
 
 Apps Scriptのトリガー設定は不要です。`links` と `categories` の内容はページ読み込み時に取得されます。
 
@@ -78,7 +83,6 @@ GASは次の形式を返します。
   "categories": [
     {
       "category": "AI",
-      "displayName": "AI",
       "initialState": "open",
       "order": 30
     }
@@ -105,6 +109,7 @@ GASは次の形式を返します。
 - すべてのカテゴリ見出しに開閉ボタンがあります。
 - `open` のカテゴリは初期表示され、`hide` のカテゴリは初期状態で閉じます。
 - 開閉状態は `localStorage` に保存しません。ページの再読み込み後はスプレッドシートの初期状態に戻ります。
+- カードにはリンク名とドメインを表示します。`description` は表示しません。
 - リンクは新しいタブで開き、`rel="noopener noreferrer"` を付けます。
 - ダークモードは `prefers-color-scheme` に従います。
 

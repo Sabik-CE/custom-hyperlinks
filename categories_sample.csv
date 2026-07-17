@@ -1,6 +1,6 @@
-active,category,display_name,initial_state,order
-TRUE,一時保存,一時保存,open,10
-TRUE,業務,業務,open,20
-TRUE,AI,AI,open,30
-TRUE,Google,Google,hide,40
-TRUE,開発,開発,hide,50
+active,category,initial_state,order
+TRUE,一時保存,open,10
+TRUE,業務,open,20
+TRUE,AI,open,30
+TRUE,Google,hide,40
+TRUE,開発,hide,50

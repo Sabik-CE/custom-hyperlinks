@@ -89,13 +89,12 @@ function readCategories(spreadsheet) {
 
       return {
         category,
-        displayName: String(row.display_name || row.displayName || category).trim() || category,
         initialState: initialState === 'hide' ? 'hide' : 'open',
         order: toNumber(row.order, index + 1)
       };
     })
     .filter(Boolean)
-    .sort((a, b) => a.order - b.order || a.displayName.localeCompare(b.displayName, 'ja'));
+    .sort((a, b) => a.order - b.order || a.category.localeCompare(b.category, 'ja'));
 }
 
 function readObjects(sheet) {

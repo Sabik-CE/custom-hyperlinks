@@ -1,0 +1,12 @@
+links=286
+categories=40
+
+{"kind":"workbook","id":"wb/j5ab2q","sheets":3,"tables":3}
+{"kind":"sheet","id":"ws/m6rxlg","name":"links","index":0,"range":"A1:F287","address":"A1:F287","tables":1}
+{"kind":"table","sheet":"links","address":"A1:F287","rows":287,"cols":6,"values":[["active","pin","category","name","url","order"],[true,false,"開発","Custom Hyperlinks","https://sabik-ce.github.io/custom-hyperlinks/",10],[true,false,"病院","名大病院","https://www.med.nagoya-u.ac.jp/hospital/",10]],"valuesTruncated":true,"valuesPreviewRows":3,"valuesPreviewCols":6,"valuesPreviewAddress":"A1:F3"}
+{"kind":"sheet","id":"ws/duzntd","name":"categories","index":1,"range":"A1:D41","address":"A1:D41","tables":1}
+{"kind":"table","sheet":"categories","address":"A1:D41","rows":41,"cols":4,"values":[["active","category","initial_state","order"],[true,"開発","open",10],[true,"病院","open",20],[true,"関連法律","open",30],[true,"Tool&Develop","open",40],[true,"color","open",50],[true,"program","open",60],[true,"学会","open",70],[true,"デジクエリ","open",80],[true,"ロケモニ","hide",90],[true,"研究＆論文","hide",100],[true,"personal","hide",110],[true,"機器管理","hide",120],[true,"業務共有","hide",130],[true,"AP","hide",140],[true,"Server","hide",150],[true,"MESSERVER","hide",160],[true,"miro.com","hide",170],[true,"学習","hide",180],[true,"G","hide",190],[true,"業務","hide",200],[true,"app.slack.com","hide",210],[true,"AI","hide",220],[true,"Google","hide",230],[true,"医療・大学","hide",240],[true,"thersacjp-my.sharepoint.com","hide",250],[true,"teams.microsoft.com","hide",260],[true,"pmda.go.jp","hide",270],[true,"obsidian.md","hide",280],[true,"MES","hide",290],[true,"FJJ_SP","hide",300],[true,"HITOTSU","hide",310],[true,"SpreadSheet","hide",320],[true,"NUSS共有","hide",330],[true,"nix.otsukalab.nitech.ac.jp","hide",340],[true,"notion.so","hide",350],[true,"cpk.jp","hide",360],[true,"fujitsu.sharepoint.com","hide",370],[true,"account.hitotsu.life","hide",380],[true,"joho-gakushu.jp","hide",390],[true,"プライベート","hide",400]]}
+{"kind":"sheet","id":"ws/yghmy1","name":"summary","index":2,"range":"A1:B5","address":"A1:B5","tables":1}
+{"kind":"table","sheet":"summary","address":"A1:B5","rows":5,"cols":2,"values":[["項目","内容"],["元ファイル","C:/Users/nagoy/Documents/bookmarks_2026_07_17.html"],["リンク件数",286],["カテゴリ件数",40],["作成日","2026-07-17T03:20:30.558Z"]]}
+
+{"kind":"notice","message":"Cell search matched 0 entries."}

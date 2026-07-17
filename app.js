@@ -2,12 +2,17 @@
 
 /**
  * GASのWebアプリURLを設定してください。
- * 例:
- * const DATA_URL = 'https://script.google.com/macros/s/AKfycbzsWmOLvd5r3ARysSn7NtWLPseqkgkmMl1txnoFChvMViONOrhtCizgg0hs0vejPPWHgA/exec';
- *
- * 未設定の場合は sampleLinks を表示します。
+ * 未設定の場合は sampleLinks / sampleCategories を表示します。
  */
 const DATA_URL = 'https://script.google.com/macros/s/AKfycbx9hFtHdRq35yOjDbSpkoIZlB_3w_TSlqL75kmb9nwSE2G6hMzV5Mj9OsUWYHqVNhSTag/exec';
+
+const sampleCategories = [
+  { active: true, category: '一時保存', initialState: 'open', order: 10 },
+  { active: true, category: '業務', initialState: 'open', order: 20 },
+  { active: true, category: 'AI', initialState: 'open', order: 30 },
+  { active: true, category: 'Google', initialState: 'hide', order: 40 },
+  { active: true, category: '開発', initialState: 'hide', order: 50 }
+];
 
 const sampleLinks = [
   {
@@ -179,7 +184,6 @@ function normalizeCategories(rawCategories) {
 
       return {
         category,
-        displayName: String(item.displayName ?? item.display_name ?? category).trim() || category,
         initialState: initialState === 'hide' ? 'hide' : 'open',
         order: toNumber(item.order, index + 1),
         isFallback: false
@@ -256,7 +260,7 @@ function renderCategories(links, categories) {
     icon.setAttribute('aria-hidden', 'true');
 
     label.className = 'category-title';
-    label.textContent = category.displayName;
+    label.textContent = category.category;
 
     count.className = 'section-count';
     count.textContent = `${categoryLinks.length}件`;
@@ -306,7 +310,6 @@ function buildCategorySettings(grouped, categories) {
     if (!configured.has(categoryName)) {
       settings.push({
         category: categoryName,
-        displayName: categoryName,
         initialState: 'open',
         order: FALLBACK_CATEGORY_ORDER,
         isFallback: true
@@ -327,7 +330,6 @@ function createCard(link) {
   const card = elements.template.content.firstElementChild.cloneNode(true);
   const icon = card.querySelector('.link-icon');
   const title = card.querySelector('.card-title');
-  const description = card.querySelector('.card-description');
   const domain = card.querySelector('.card-domain');
 
   card.href = link.url;
@@ -335,16 +337,17 @@ function createCard(link) {
   card.setAttribute('aria-label', `${link.name}を新しいタブで開く`);
 
   title.textContent = link.name;
-  description.textContent = link.description;
 
   const parsedUrl = new URL(link.url);
   domain.textContent = parsedUrl.hostname.replace(/^www\./, '');
 
-  icon.src = getFaviconUrl(parsedUrl.origin);
+  const faviconCandidates = getFaviconUrls(parsedUrl);
+  icon.dataset.faviconIndex = '0';
+  icon.src = faviconCandidates[0];
   icon.alt = `${link.name}のアイコン`;
   icon.addEventListener('error', () => {
-    icon.src = createFallbackIcon(link.name);
-  }, { once: true });
+    showNextFavicon(icon, faviconCandidates, link.name);
+  });
 
   return card;
 }
@@ -358,15 +361,31 @@ function compareCategories(a, b) {
     return Number(a.isFallback) - Number(b.isFallback);
   }
 
-  return a.displayName.localeCompare(b.displayName, 'ja');
+  return a.category.localeCompare(b.category, 'ja');
 }
 
 function compareLinks(a, b) {
   return a.order - b.order || a.name.localeCompare(b.name, 'ja');
 }
 
-function getFaviconUrl(origin) {
-  return `https://www.google.com/s2/favicons?domain_url=${encodeURIComponent(origin)}&sz=64`;
+function getFaviconUrls(url) {
+  const host = url.hostname.replace(/^www\./, '');
+  const candidates = [
+    `https://icons.duckduckgo.com/ip3/${encodeURIComponent(host)}.ico`,
+    `https://www.google.com/s2/favicons?domain_url=${encodeURIComponent(url.origin)}&sz=64`
+  ];
+
+  if (url.protocol === 'https:') {
+    candidates.push(`${url.origin}/favicon.ico`);
+  }
+
+  return candidates;
+}
+
+function showNextFavicon(icon, candidates, name) {
+  const nextIndex = Number(icon.dataset.faviconIndex ?? 0) + 1;
+  icon.dataset.faviconIndex = String(nextIndex);
+  icon.src = candidates[nextIndex] ?? createFallbackIcon(name);
 }
 
 function createFallbackIcon(name) {
