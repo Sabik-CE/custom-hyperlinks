@@ -59,7 +59,7 @@ a {
   gap: 24px;
   max-width: 1440px;
   margin: 0 auto;
-  padding: 40px 24px 20px;
+  padding: 28px 24px 16px;
 }
 
 .eyebrow {
@@ -72,7 +72,7 @@ a {
 
 h1 {
   margin: 0;
-  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
   line-height: 1.05;
 }
 
@@ -108,7 +108,7 @@ h1 {
 .page-shell {
   width: min(1440px, 100%);
   margin: 0 auto;
-  padding: 12px 24px 64px;
+  padding: 8px 24px 64px;
 }
 
 .status-panel {
@@ -128,7 +128,7 @@ h1 {
   margin-top: 34px;
 }
 
-#pinned-section {
+.pinned-section {
   padding: 22px;
   border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
   border-radius: calc(var(--radius) + 4px);
@@ -145,6 +145,40 @@ h1 {
 .section-heading h2 {
   margin: 0;
   font-size: 1.35rem;
+}
+
+.category-toggle {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.category-toggle:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 6px;
+}
+
+.toggle-icon {
+  width: 1em;
+  color: var(--accent);
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.category-panel {
+  overflow: hidden;
+}
+
+.category-panel[hidden] {
+  display: none;
 }
 
 .section-count {
@@ -274,7 +308,7 @@ h1 {
     grid-template-columns: 1fr;
   }
 
-  #pinned-section {
+  .pinned-section {
     padding: 16px;
   }
 }

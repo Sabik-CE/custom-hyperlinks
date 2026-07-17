@@ -7,7 +7,7 @@
  *
  * 未設定の場合は sampleLinks を表示します。
  */
-const DATA_URL = 'https://script.google.com/macros/s/AKfycbzgw2GbrxSyKYVdM_K5XBmvuiN2Fetz32YdSxvtg3KiJDLsAzT8b2bwHZEIefJxXGD7DQ/exec';
+const DATA_URL = 'https://script.google.com/macros/s/AKfycbx9hFtHdRq35yOjDbSpkoIZlB_3w_TSlqL75kmb9nwSE2G6hMzV5Mj9OsUWYHqVNhSTag/exec';
 
 const sampleLinks = [
   {
@@ -34,7 +34,7 @@ const sampleLinks = [
     category: 'Google',
     name: 'Google Drive',
     url: 'https://drive.google.com/',
-    description: 'ファイル・知識保存',
+    description: 'ファイルと資料の保存',
     order: 10
   },
   {
@@ -43,10 +43,13 @@ const sampleLinks = [
     category: '開発',
     name: 'GitHub',
     url: 'https://github.com/',
-    description: 'コード・リポジトリ管理',
+    description: 'コードとリポジトリ管理',
     order: 10
   }
 ];
+
+const FALLBACK_CATEGORY = '未分類';
+const FALLBACK_CATEGORY_ORDER = 9999;
 
 const elements = {
   statusPanel: document.querySelector('#status-panel'),
@@ -70,10 +73,16 @@ async function loadLinks() {
   try {
     const payload = DATA_URL
       ? await fetchRemoteData(DATA_URL)
-      : { links: sampleLinks, updatedAt: null, isSample: true };
+      : {
+          links: sampleLinks,
+          categories: sampleCategories,
+          updatedAt: null,
+          isSample: true
+        };
 
     const links = normalizeLinks(payload.links);
-    renderLinks(links);
+    const categories = normalizeCategories(payload.categories);
+    renderLinks(links, categories);
 
     if (payload.isSample) {
       showStatus(
@@ -90,7 +99,7 @@ async function loadLinks() {
       'データの取得に失敗しました。GASの公開設定、URL、レスポンス形式を確認してください。',
       true
     );
-    renderLinks([]);
+    renderLinks([], []);
     updateTimestamp(null);
   } finally {
     setLoading(false);
@@ -113,6 +122,7 @@ async function fetchRemoteData(url) {
   if (Array.isArray(json)) {
     return {
       links: json,
+      categories: [],
       updatedAt: null,
       isSample: false
     };
@@ -124,6 +134,7 @@ async function fetchRemoteData(url) {
 
   return {
     links: json.links,
+    categories: Array.isArray(json.categories) ? json.categories : [],
     updatedAt: json.updatedAt ?? null,
     isSample: false
   };
@@ -142,7 +153,7 @@ function normalizeLinks(rawLinks) {
       return {
         active: toBoolean(item.active, true),
         pin: toBoolean(item.pin, false),
-        category: String(item.category ?? '未分類').trim() || '未分類',
+        category: String(item.category ?? FALLBACK_CATEGORY).trim() || FALLBACK_CATEGORY,
         name,
         url,
         description: String(item.description ?? '').trim(),
@@ -150,22 +161,35 @@ function normalizeLinks(rawLinks) {
       };
     })
     .filter(Boolean)
-    .filter((item) => item.active)
-    .sort((a, b) => {
-      if (a.pin !== b.pin) {
-        return Number(b.pin) - Number(a.pin);
-      }
-
-      const categoryCompare = a.category.localeCompare(b.category, 'ja');
-      if (categoryCompare !== 0) {
-        return categoryCompare;
-      }
-
-      return a.order - b.order || a.name.localeCompare(b.name, 'ja');
-    });
+    .filter((item) => item.active);
 }
 
-function renderLinks(links) {
+function normalizeCategories(rawCategories) {
+  return rawCategories
+    .map((item, index) => {
+      const category = String(item.category ?? '').trim();
+
+      if (!category || !toBoolean(item.active, true)) {
+        return null;
+      }
+
+      const initialState = String(item.initialState ?? item.initial_state ?? 'open')
+        .trim()
+        .toLowerCase();
+
+      return {
+        category,
+        displayName: String(item.displayName ?? item.display_name ?? category).trim() || category,
+        initialState: initialState === 'hide' ? 'hide' : 'open',
+        order: toNumber(item.order, index + 1),
+        isFallback: false
+      };
+    })
+    .filter(Boolean)
+    .sort(compareCategories);
+}
+
+function renderLinks(links, categories) {
   elements.pinnedGrid.replaceChildren();
   elements.categoryContainer.replaceChildren();
 
@@ -173,7 +197,7 @@ function renderLinks(links) {
   const normalLinks = links.filter((item) => !item.pin);
 
   renderPinnedLinks(pinnedLinks);
-  renderCategories(normalLinks);
+  renderCategories(normalLinks, categories);
 
   if (links.length === 0) {
     showStatus('表示対象のリンクがありません。');
@@ -192,13 +216,76 @@ function renderPinnedLinks(links) {
 
   const fragment = document.createDocumentFragment();
   links
-    .sort((a, b) => a.order - b.order || a.name.localeCompare(b.name, 'ja'))
+    .sort(compareLinks)
     .forEach((link) => fragment.appendChild(createCard(link)));
 
   elements.pinnedGrid.appendChild(fragment);
 }
 
-function renderCategories(links) {
+function renderCategories(links, categories) {
+  const grouped = groupLinksByCategory(links);
+  const categorySettings = buildCategorySettings(grouped, categories);
+
+  categorySettings.forEach((category, index) => {
+    const categoryLinks = grouped.get(category.category) ?? [];
+
+    if (categoryLinks.length === 0) {
+      return;
+    }
+
+    const sectionId = `category-${index + 1}-${slugify(category.category)}`;
+    const isOpen = category.initialState === 'open';
+    const section = document.createElement('section');
+    section.className = 'link-section';
+
+    const heading = document.createElement('div');
+    heading.className = 'section-heading';
+
+    const title = document.createElement('h2');
+    const toggle = document.createElement('button');
+    const icon = document.createElement('span');
+    const label = document.createElement('span');
+    const count = document.createElement('span');
+
+    toggle.type = 'button';
+    toggle.className = 'category-toggle';
+    toggle.setAttribute('aria-expanded', String(isOpen));
+    toggle.setAttribute('aria-controls', sectionId);
+
+    icon.className = 'toggle-icon';
+    icon.setAttribute('aria-hidden', 'true');
+
+    label.className = 'category-title';
+    label.textContent = category.displayName;
+
+    count.className = 'section-count';
+    count.textContent = `${categoryLinks.length}件`;
+
+    toggle.append(icon, label, count);
+    title.appendChild(toggle);
+    heading.appendChild(title);
+
+    const grid = document.createElement('div');
+    grid.id = sectionId;
+    grid.className = 'card-grid category-panel';
+    grid.hidden = !isOpen;
+
+    categoryLinks
+      .sort(compareLinks)
+      .forEach((link) => grid.appendChild(createCard(link)));
+
+    updateCategoryToggle(toggle, icon, grid);
+    toggle.addEventListener('click', () => {
+      grid.hidden = !grid.hidden;
+      updateCategoryToggle(toggle, icon, grid);
+    });
+
+    section.append(heading, grid);
+    elements.categoryContainer.appendChild(section);
+  });
+}
+
+function groupLinksByCategory(links) {
   const grouped = new Map();
 
   links.forEach((link) => {
@@ -208,31 +295,32 @@ function renderCategories(links) {
     grouped.get(link.category).push(link);
   });
 
-  grouped.forEach((categoryLinks, categoryName) => {
-    const section = document.createElement('section');
-    section.className = 'link-section';
+  return grouped;
+}
 
-    const heading = document.createElement('div');
-    heading.className = 'section-heading';
+function buildCategorySettings(grouped, categories) {
+  const configured = new Map(categories.map((category) => [category.category, category]));
+  const settings = categories.filter((category) => grouped.has(category.category));
 
-    const title = document.createElement('h2');
-    title.textContent = categoryName;
-
-    const count = document.createElement('span');
-    count.className = 'section-count';
-    count.textContent = `${categoryLinks.length}件`;
-
-    const grid = document.createElement('div');
-    grid.className = 'card-grid';
-
-    categoryLinks
-      .sort((a, b) => a.order - b.order || a.name.localeCompare(b.name, 'ja'))
-      .forEach((link) => grid.appendChild(createCard(link)));
-
-    heading.append(title, count);
-    section.append(heading, grid);
-    elements.categoryContainer.appendChild(section);
+  grouped.forEach((_, categoryName) => {
+    if (!configured.has(categoryName)) {
+      settings.push({
+        category: categoryName,
+        displayName: categoryName,
+        initialState: 'open',
+        order: FALLBACK_CATEGORY_ORDER,
+        isFallback: true
+      });
+    }
   });
+
+  return settings.sort(compareCategories);
+}
+
+function updateCategoryToggle(toggle, icon, panel) {
+  const isOpen = !panel.hidden;
+  icon.textContent = isOpen ? '▼' : '▶';
+  toggle.setAttribute('aria-expanded', String(isOpen));
 }
 
 function createCard(link) {
@@ -259,6 +347,22 @@ function createCard(link) {
   }, { once: true });
 
   return card;
+}
+
+function compareCategories(a, b) {
+  if (a.order !== b.order) {
+    return a.order - b.order;
+  }
+
+  if (a.isFallback !== b.isFallback) {
+    return Number(a.isFallback) - Number(b.isFallback);
+  }
+
+  return a.displayName.localeCompare(b.displayName, 'ja');
+}
+
+function compareLinks(a, b) {
+  return a.order - b.order || a.name.localeCompare(b.name, 'ja');
 }
 
 function getFaviconUrl(origin) {
@@ -351,6 +455,14 @@ function isHttpUrl(value) {
   } catch {
     return false;
   }
+}
+
+function slugify(value) {
+  const encoded = encodeURIComponent(value)
+    .replace(/%/g, '')
+    .toLowerCase();
+
+  return encoded || 'uncategorized';
 }
 
 function escapeXml(value) {

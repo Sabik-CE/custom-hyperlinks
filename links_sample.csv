@@ -1,0 +1,11 @@
+active,pin,category,name,url,description,order
+TRUE,TRUE,一時保存,GitHub Repository,https://github.com/,このサイトのリポジトリ管理,10
+TRUE,TRUE,業務,Google Calendar,https://calendar.google.com/,予定確認,20
+TRUE,FALSE,AI,ChatGPT,https://chatgpt.com/,メインAI,10
+TRUE,FALSE,AI,Claude,https://claude.ai/,AIアシスタント,20
+TRUE,FALSE,Google,Google Drive,https://drive.google.com/,ファイルと資料の保存,10
+TRUE,FALSE,Google,Gmail,https://mail.google.com/,メール確認,20
+TRUE,FALSE,開発,GitHub,https://github.com/,コードとリポジトリ管理,10
+TRUE,FALSE,開発,MDN Web Docs,https://developer.mozilla.org/,Web技術リファレンス,20
+FALSE,FALSE,業務,非表示サンプル,https://example.com/,activeがFALSEなので表示されません,30
+TRUE,FALSE,未設定カテゴリ,Fallback Example,https://example.com/,categoriesにないカテゴリは最後に表示されます,10

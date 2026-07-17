@@ -1,70 +1,88 @@
 # Custom Hyperlinks
 
-Googleスプレッドシートで管理する個人用リンク集を、GitHub Pages上にカード形式で表示するための静的サイトです。
+Googleスプレッドシートで管理する個人用リンク集を、GitHub Pages上でカード形式に表示する静的サイトです。
 
-## 初期ファイル
+## ファイル構成
 
 ```text
 custom-hyperlinks/
 ├── index.html
 ├── style.css
 ├── app.js
+├── Code.gs
+├── links_sample.csv
+├── categories_sample.csv
 ├── robots.txt
 └── README.md
 ```
 
-## 初期確認
+## GitHub Pages
 
-リポジトリのルートへファイルを配置し、GitHubへPushしてください。
-
-GitHub Pagesは以下の設定を使用します。
+GitHub Pagesは次の設定を想定しています。
 
 - Source: `Deploy from a branch`
 - Branch: `main`
 - Folder: `/ (root)`
 
-## GAS未接続時
+## Googleスプレッドシート
 
-`app.js` の `DATA_URL` が空の場合、サンプルデータが表示されます。
+リンク一覧は `links` シート、カテゴリ設定は `categories` シートで管理します。
 
-```javascript
-const DATA_URL = '';
+### links
+
+必須列:
+
+```text
+active | pin | category | name | url | description | order
 ```
 
-## GAS接続時
+- `active`: `TRUE` の行だけ表示します。
+- `pin`: `TRUE` の行は上部のピン留め欄に表示します。
+- `category`: カテゴリキーです。`categories.category` と一致すると表示名や初期開閉状態が反映されます。
+- `order`: 同じカテゴリ内のリンク表示順です。小さい値が先に表示されます。
 
-GASをWebアプリとして公開した後、`app.js` の `DATA_URL` にURLを設定します。
+### categories
 
-```javascript
-const DATA_URL =
-  'https://script.google.com/macros/s/XXXXXXXXXXXX/exec';
+必須列:
+
+```text
+active | category | display_name | initial_state | order
 ```
 
-## 想定JSON形式
+- `active`: `TRUE` のカテゴリだけ有効です。
+- `category`: `links.category` と対応する内部キーです。
+- `display_name`: サイト上に表示するカテゴリ名です。
+- `initial_state`: `open` または `hide` を指定します。それ以外は `open` になります。
+- `order`: カテゴリ表示順です。小さい値が先に表示されます。
 
-配列形式とオブジェクト形式の両方に対応しています。
+`categories` に存在しないカテゴリのリンクも表示されます。その場合は元のカテゴリ名を表示し、初期状態は `open`、表示順は設定済みカテゴリの後ろになります。
 
-### 配列形式
+## GASの設定
 
-```json
-[
-  {
-    "active": true,
-    "pin": true,
-    "category": "一時保存",
-    "name": "GitHub",
-    "url": "https://github.com/",
-    "description": "コード管理",
-    "order": 10
-  }
-]
-```
+1. Google Apps Scriptに `Code.gs` の内容を貼り付けます。
+2. スプレッドシートIDを使う場合は `SPREADSHEET_ID` に設定します。同じスプレッドシートに紐づくApps Scriptなら空のままで動作します。
+3. Webアプリとしてデプロイします。
+4. アクセス権は利用環境に合わせて設定し、発行されたWebアプリURLを `app.js` の `DATA_URL` に設定します。
+5. `links_sample.csv` をGoogleスプレッドシートにインポートし、シート名を `links` にします。
+6. `categories_sample.csv` をGoogleスプレッドシートにインポートし、シート名を `categories` にします。
 
-### オブジェクト形式
+Apps Scriptのトリガー設定は不要です。`links` と `categories` の内容はページ読み込み時に取得されます。
+
+## JSON形式
+
+GASは次の形式を返します。
 
 ```json
 {
-  "updatedAt": "2026-07-16T09:00:00+09:00",
+  "updatedAt": "2026-07-16T10:00:00+09:00",
+  "categories": [
+    {
+      "category": "AI",
+      "displayName": "AI",
+      "initialState": "open",
+      "order": 30
+    }
+  ],
   "links": [
     {
       "active": true,
@@ -79,11 +97,20 @@ const DATA_URL =
 }
 ```
 
+旧形式のリンク配列だけを返すGASにも引き続き対応しています。
+
+## 表示仕様
+
+- ピン留めリンクは上部に表示され、通常カテゴリには重複表示されません。
+- すべてのカテゴリ見出しに開閉ボタンがあります。
+- `open` のカテゴリは初期表示され、`hide` のカテゴリは初期状態で閉じます。
+- 開閉状態は `localStorage` に保存しません。ページの再読み込み後はスプレッドシートの初期状態に戻ります。
+- リンクは新しいタブで開き、`rel="noopener noreferrer"` を付けます。
+- ダークモードは `prefers-color-scheme` に従います。
+
 ## 注意事項
 
-このサイトはアクセス制限を持ちません。
-
-以下は保存しないでください。
+このサイト自体はアクセス制限を持ちません。以下の情報は保存しないでください。
 
 - パスワード
 - APIキー

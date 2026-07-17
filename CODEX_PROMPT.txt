@@ -1,0 +1,9 @@
+このリポジトリの `AGENTS.md` と `docs/HANDOFF.md` を最初にすべて読んでください。
+
+その後、既存の `index.html`、`style.css`、`app.js`、`README.md` を確認し、`docs/HANDOFF.md` に記載された変更を一括実装してください。
+
+Google Apps Script用の更新版 `Code.gs` と、Googleスプレッドシートへインポートできる `categories_sample.csv` も作成してください。
+
+既存機能を維持し、HTML・CSS・Vanilla JavaScriptのみを使用してください。実装後は構文確認と可能な範囲の動作確認を行い、変更ファイル、検証結果、手動作業が必要な項目を報告してください。
+
+コミットとPushは行わないでください。
